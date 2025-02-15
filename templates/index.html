@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>To-Do List</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div id="flash-messages" class="alert">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form action="/add" method="post">
+            <input type="text" name="task" placeholder="Enter a task" required>
+            <input type="date" name="date" required>
+            <button type="submit">Add</button>
+        </form>
+    </header>
+    <div>
+        {% for index, task in enumerate(tasks) %}
+            <div class="task">
+                {% if task['completed'] %}
+                    <s class="task-text">{{ task['task'] }}</s>
+                {% else %}
+                    <span class="task-text">
+                        <strong>{{ task['task'] }} - </strong>
+                        <span class="due-date">
+                            {{ task['dueDate'] }}
+                        </span>
+                    </span>
+                    <form action="complete/{{index}}" method="POST">
+                        <button class="complete-btn" type="submit">✅</button>
+                    </form>
+                {% endif %}
+                <form action="/delete/{{index}}" method="POST">
+                    <button class="delete-btn" type="submit">❌</button>
+                </form>
+            </div>
+        {% endfor %}
+        {% if tasks|length > 0 %}
+            <form action="/clear" method="POST">
+                <button type="submit">Clear All</button>
+            </form>
+        {% endif %}
+    </div> 
+</body>
+</html>

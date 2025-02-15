@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, sans-serif;
+    background:darkslategray;
+}
+
+header {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.task {
+    display: flex;
+    background: #fff;
+    padding: 10px;   
+    margin: 10px;
+    align-items: center;
+}
+
+.task-text {
+    flex: 1;
+}
+
+.due-date {
+    color: #555;
+    font-size: small;
+}
+
+.complete-btn, .delete-btn {
+    border: none;
+    background: none;
+    font-size:large;
+}
