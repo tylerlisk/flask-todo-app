@@ -8,25 +8,53 @@ header {
     margin-top: 50px;
 }
 
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
 .task {
     display: flex;
     background: #fff;
     padding: 10px;   
     margin: 10px;
     align-items: center;
-}
-
-.task-text {
-    flex: 1;
-}
-
-.due-date {
-    color: #555;
-    font-size: small;
+    border-radius: 5px;
+    max-width: 500px;
 }
 
 .complete-btn, .delete-btn {
     border: none;
     background: none;
     font-size:large;
+    cursor: pointer;
 }
+
+
+.edit-input, .edit-date {
+    padding: 5px;
+    border-radius: 5px;
+    border: none;
+    font-size: 15px;
+    font-weight:bold;
+}
+
+.edit-input:hover, .edit-date:hover {
+    background-color:aliceblue;
+}
+
+.edit-btn {
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.edit-btn:hover {
+    background-color: #0056b3;
+}
+

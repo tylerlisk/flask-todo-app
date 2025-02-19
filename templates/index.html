@@ -9,47 +9,53 @@
 <body>
     <header>
         <h1>To-Do List</h1>
+
         {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div id="flash-messages" class="alert">
-                    {% for message in messages %}
+        {% if messages %}
+            <div id="flash-messages">
+                {% for message in messages %}
+                    <div class="alert">
                         <p>{{ message }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
         {% endwith %}
         <form action="/add" method="post">
             <input type="text" name="task" placeholder="Enter a task" required>
-            <input type="date" name="date" required>
+            <input type="date" name="date">
             <button type="submit">Add</button>
         </form>
+
     </header>
-    <div>
-        {% for index, task in enumerate(tasks) %}
+
+    <div class="container">
+        {% for task in tasks %}
             <div class="task">
                 {% if task['completed'] %}
-                    <s class="task-text">{{ task['task'] }}</s>
+                    <s class="task-text">{{ task['title'] }}</s>
                 {% else %}
-                    <span class="task-text">
-                        <strong>{{ task['task'] }} - </strong>
-                        <span class="due-date">
-                            {{ task['dueDate'] }}
-                        </span>
-                    </span>
-                    <form action="complete/{{index}}" method="POST">
+                    <form action="/edit/{{ task['id'] }}" method="post" class="edit-form">
+                        <input type="text" name="task_edit" value="{{ task['title'] }}" required class="edit-input">
+                        <input type="date" name="date_edit" value="{{ task['due_date'] }}" class="edit-date">
+                        <button type="submit" class="edit-btn">✏️ Edit</button>
+                    </form>                        
+
+                    <form action="/complete/{{ task['id'] }}" method="POST">
                         <button class="complete-btn" type="submit">✅</button>
                     </form>
                 {% endif %}
-                <form action="/delete/{{index}}" method="POST">
+                <form action="/delete/{{ task['id'] }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this task?')">
                     <button class="delete-btn" type="submit">❌</button>
                 </form>
             </div>
         {% endfor %}
+        
         {% if tasks|length > 0 %}
             <form action="/clear" method="POST">
                 <button type="submit">Clear All</button>
             </form>
         {% endif %}
-    </div> 
+    </div>    
 </body>
 </html>
