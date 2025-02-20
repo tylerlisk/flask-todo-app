@@ -1,128 +1,90 @@
-from flask import Flask, request, redirect, render_template, flash
-import sqlite3
+from flask import Flask, render_template, redirect, request, flash
+from flask_sqlalchemy import SQLAlchemy
+import os
 
 """ Simple flask application to create to-do tasks with due dates and mark as completed/delete/edit them"""
 
 app = Flask(__name__)
-app.secret_key = "secret_key"
+app.secret_key = 'my_secret_key'
 
-def init_db():
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-            CREATE TABLE IF NOT EXISTS tasks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            due_date TEXT,
-            completed INTEGER NOT NULL DEFAULT 0
-            )
-            ''')
-    conn.commit()
-    conn.close()
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-init_db()
+db = SQLAlchemy(app)
 
-def get_db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+class Task(db.Model):
+    __tablename__ = 'tasks'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String(100), nullable=False, unique=True)
+    completed = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=db.func.now())
 
 @app.route('/')
 def home():
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    filter = request.args.get('filter', None)
 
-    sql = 'SELECT * FROM tasks'
-    cursor.execute(sql)
-    tasks = cursor.fetchall()
+    if filter == 'completed':
+        tasks = Task.query.filter_by(completed=True).all()
+    elif filter == 'incomplete':
+        tasks = Task.query.filter_by(completed=False).all()
+    elif filter == 'date':
+        tasks = Task.query.order_by(Task.created_at.desc()).all()
+    else:
+        tasks = Task.query.all()
 
-    conn.close()
     return render_template('index.html', tasks=tasks)
-
 
 @app.route('/add', methods=['POST'])
 def add_task():
-    task = request.form.get('task')
-    due_date = request.form.get('date') 
+    title = request.form.get('task')
+    new_task = Task(title=title)
 
-    if task:  
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        sql = 'INSERT INTO tasks (title, due_date) VALUES (?, ?)'
-        cursor.execute(sql, (task,due_date,)) 
-        
-        conn.commit()
-        conn.close()
-
-        flash('Task added successfully', 'success')
-    else:
-        flash('Task description cannot be empty.', 'error')
-
-    return redirect('/')
-
-@app.route('/complete/<int:task_id>', methods=['POST'])
-def complete_task(task_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    sql = 'UPDATE tasks SET completed = 1 WHERE id = ?'
-    cursor.execute(sql, (task_id,))
-    
-    conn.commit()
-    conn.close()
-
-    flash('Task marked as completed', 'success')
+    db.session.add(new_task)
+    db.session.commit()
 
     return redirect('/')
 
 @app.route('/delete/<int:task_id>', methods=['POST'])
 def delete_task(task_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    task = Task.query.get(task_id)
 
-    sql = 'DELETE FROM tasks WHERE id = ?'
-    cursor.execute(sql, (task_id,))
-    
-    conn.commit()
-    conn.close()
-
-    flash('Task deleted', 'success')
-
+    db.session.delete(task)
+    db.session.commit()
     return redirect('/')
 
-@app.route('/edit/<int:task_id>', methods=['POST'])
+@app.route('/complete/<int:task_id>', methods=['POST'])
+def complete_task(task_id):
+    task = Task.query.get(task_id)
+    task.completed = True
+
+    db.session.commit()
+    return redirect('/')
+
+@app.route('/edit/<int:task_id>', methods=['GET', 'POST'])
 def edit_task(task_id):
+    task = Task.query.get(task_id)
 
-    new_title = request.form.get('task_edit')
-    new_date = request.form.get('date_edit') 
+    if request.method == 'POST':
+        new_title = request.form.get('new_title')
+        if new_title != task.title:
+            task.title = new_title
+            db.session.commit()
+            flash('Task edited successfully', 'success')
+        else:
+            flash('Title was not changed', 'info')
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+        return redirect('/')
 
-    sql = 'UPDATE tasks SET title = ?, due_date = ? WHERE id = ?'
-    cursor.execute(sql, (new_title,new_date,task_id,))
-    
-    conn.commit()
-    conn.close()
-
-    flash('Task edited successfully', 'success')
-
-    return redirect('/')
+    return render_template('edit_task.html', task=task)
 
 @app.route('/clear', methods=['POST'])
 def clear_tasks():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute('DELETE FROM tasks')
-    
-    conn.commit()
-    conn.close()
-
-    flash('Task list cleared', 'success')
-
+    db.session.query(Task).delete()
+    db.session.commit()
     return redirect('/')
-
-if __name__ == '__main__':
-    app.run()
+    
+if __name__  == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)

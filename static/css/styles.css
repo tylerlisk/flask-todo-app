@@ -17,35 +17,49 @@ header {
 
 .task {
     display: flex;
-    background: #fff;
-    padding: 10px;   
-    margin: 10px;
     align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    padding: 15px;
+    margin: 10px;
     border-radius: 5px;
-    max-width: 500px;
+    width: 100%;
+    max-width: 400px;  
+}
+
+.task-actions {
+    display: flex;
 }
 
 .complete-btn, .delete-btn {
     border: none;
     background: none;
-    font-size:large;
     cursor: pointer;
+    font-size:medium;
 }
 
-
-.edit-input, .edit-date {
-    padding: 5px;
-    border-radius: 5px;
+.clear-btn {
+    background-color: #dc3545;
+    color: white;
+    cursor: pointer;
     border: none;
-    font-size: 15px;
-    font-weight:bold;
-}
-
-.edit-input:hover, .edit-date:hover {
-    background-color:aliceblue;
+    border-radius: 5px;
+    padding: 5px;
+    margin-right: 350px;
 }
 
 .edit-btn {
+    color: white;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.filter-form {
+    padding: 10px;
+}
+
+.filter-btn {
     background-color: #007bff;
     color: white;
     cursor: pointer;
@@ -54,7 +68,4 @@ header {
     padding: 5px;
 }
 
-.edit-btn:hover {
-    background-color: #0056b3;
-}
 
