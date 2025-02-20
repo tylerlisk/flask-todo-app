@@ -8,6 +8,12 @@ header {
     margin-top: 50px;
 }
 
+nav {
+    margin: 10px;
+    font-size: medium;
+    font-weight: bold;
+}
+
 .container {
     display: flex;
     justify-content: center;

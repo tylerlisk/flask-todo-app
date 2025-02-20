@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, request, flash
-from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, logout_user, login_required
+from models import db, User, Task
 import os
 
 """ Simple flask application to create to-do tasks with due dates and mark as completed/delete/edit them"""
@@ -11,16 +12,58 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+db.init_app(app)
+login_manager = LoginManager(app)
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
-class Task(db.Model):
-    __tablename__ = 'tasks'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    title = db.Column(db.String(100), nullable=False, unique=True)
-    completed = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=db.func.now())
+with app.app_context():
+    db.create_all()
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        new_user = User(username=username, password=password)
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash('Account registered, you may now login.', 'success')
+        return redirect('/login')
+    
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        user_query = User.query.filter_by(username=username).first()
+        if user_query and user_query.password == password:
+            login_user(user_query)
+            flash('You are logged in!', 'success')
+            return redirect('/')
+        else:
+            flash('Invalid credentials. Please try again', 'danger')
+    
+    return render_template('login.html')
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect('/login')
+
 
 @app.route('/')
+@login_required
 def home():
     filter = request.args.get('filter', None)
 
@@ -85,6 +128,4 @@ def clear_tasks():
     return redirect('/')
     
 if __name__  == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)

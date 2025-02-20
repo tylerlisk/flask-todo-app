@@ -9,6 +9,9 @@
 <body>
     <header>
         <h1>To-Do List</h1>
+        <nav>
+            <a href="/logout">Logout</a>
+        </nav>
         {% with messages = get_flashed_messages() %}
         {% if messages %}
             <div id="flash-messages">
@@ -29,7 +32,7 @@
     <div class="container">
         <form action="/" method="GET" class="filter-form">
             <select name="filter" id="filter">
-                <option value="">All Tasks</option> 
+                <option value="">All Tasks</option>
                 <option value="incomplete">Hide Completed</option>
                 <option value="completed">Show Completed</option>
                 <option value="date">Date Created</option>
@@ -64,11 +67,6 @@
             <button type="submit" class="clear-btn">Clear All</button>
         </form>
     {% endif %}
-        {% if tasks|length == 0 %}
-            <div class="no-tasks">
-                <p>No tasks available. Add a task to get started!</p>
-            </div>
-        {% endif %}
     </div>    
 </body>
 </html>
