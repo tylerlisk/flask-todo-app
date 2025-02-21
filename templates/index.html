@@ -8,20 +8,21 @@
 </head>
 <body>
     <header>
-        <h1>To-Do List</h1>
+        <h1>Your To-Do List</h1>
+        <p>Welcome, {{ current_user.username }} you currently have {{tasks|length}} task(s).</p>
         <nav>
             <a href="/logout">Logout</a>
         </nav>
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
             <div id="flash-messages">
-                {% for message in messages %}
-                    <div class="alert">
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">
                         <p>{{ message }}</p>
                     </div>
                 {% endfor %}
             </div>
-        {% endif %}
+            {% endif %}
         {% endwith %}
         <form action="/add" method="post">
             <input type="text" name="task" placeholder="Enter a task" required>
