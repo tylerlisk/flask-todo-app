@@ -11,7 +11,7 @@
         <h1>Your To-Do List</h1>
         <p>Welcome, {{ current_user.username }} you currently have {{tasks|length}} task(s).</p>
         <nav>
-            <a href="/logout">Logout</a>
+            <a href="{{ url_for('auth.logout')}}">Logout</a>
         </nav>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -24,14 +24,14 @@
             </div>
             {% endif %}
         {% endwith %}
-        <form action="/add" method="post">
+        <form action="{{ url_for('main.add_task')}}" method="post">
             <input type="text" name="task" placeholder="Enter a task" required>
             <button type="submit">Add</button>
         </form>
     </header>
     {% if tasks|length > 0 %}
     <div class="container">
-        <form action="/" method="GET" class="filter-form">
+        <form action="{{ url_for('main.home') }}" method="GET" class="filter-form">
             <select name="filter" id="filter">
                 <option value="">All Tasks</option>
                 <option value="incomplete">Hide Completed</option>
@@ -52,12 +52,12 @@
             </div>
             <div class="task-actions">
                 {% if not task.completed %}
-                    <a href="/edit/{{ task.id }}" class="edit-btn">✏️</a>
-                    <form action="/complete/{{ task.id }}" method="POST">
+                    <a href="{{ url_for('main.edit_task', task_id=task.id)}}" class="edit-btn">✏️</a>
+                    <form action="{{ url_for('main.complete_task', task_id=task.id)}}" method="POST">
                         <button class="complete-btn" type="submit">✅</button>
                     </form>
                 {% endif %}
-                <form action="/delete/{{ task.id }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this task?')">
+                <form action="{{ url_for('main.delete_task', task_id=task.id)}}" method="POST" onsubmit="return confirm('Are you sure you want to delete this task?')">
                     <button class="delete-btn" type="submit">❌</button>
                 </form>
             </div>
