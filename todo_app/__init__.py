@@ -1,6 +1,6 @@
 from flask import Flask
 from .config import Config
-from .extensions import db, login_manager
+from .extensions import db, login_manager, bcrypt
 from .auth_routes import auth
 from .task_routes import main
 
@@ -10,6 +10,8 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
+    bcrypt.init_app(app)
+    
     login_manager.login_view = "auth.login"
 
     app.register_blueprint(auth, url_prefix="/auth")
