@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, request, flash, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from .models import db, User
-from .extensions import login_manager
+from .extensions import login_manager, bcrypt
 
 auth = Blueprint('auth', __name__)
 
@@ -14,7 +14,7 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        new_user = User(username=username, password=password)
+        new_user = User(username=username, password=bcrypt.generate_password_hash(password))
 
         db.session.add(new_user)
         db.session.commit()
@@ -30,9 +30,10 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        user_query = User.query.filter_by(username=username).first()
-        if user_query and user_query.password == password:
-            login_user(user_query)
+        user = User.query.filter_by(username=username).first()
+
+        if user and bcrypt.check_password_hash(user.password, password):
+            login_user(user)
             flash('You are logged in!', 'success')
             return redirect(url_for("main.home"))
         else:
