@@ -18,3 +18,5 @@ ENV/
 # Flask specific: Ignore instance folder and application files
 instance/
 *.db
+
+*.pem
