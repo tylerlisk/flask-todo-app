@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy Flask App to EC2
 
 on:
   push:
@@ -10,22 +10,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Setup SSH key
-        run: |
-          echo "${{ secrets.AWS_PRIVATE_KEY }}" > private_key.pem
-          chmod 600 private_key.pem
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
 
-      - name: Deploy to EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            cd /home/tylerlisk/flask-todo-app 
-            git pull origin main
-            source venv/bin/activate
-            pip install -r requirements.txt
-            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env
-            echo "SQLALCHEMY_DATABASE_URI=${{ secrets.SQLALCHEMY_DATABASE_URI }}" >> .env
-            systemctl restart flask-todo-app
-          EOF
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+          cd /home/tylerlisk/flask-todo-app || exit
+          git pull origin main || exit
+          python3 -m venv venv || exit
+          source venv/bin/activate || exit
+          pip install -r requirements.txt || exit
+          sudo systemctl restart flask-todo-app.service || exit
+        EOF
