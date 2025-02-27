@@ -27,5 +27,5 @@ jobs:
             pip install -r requirements.txt
             echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env
             echo "SQLALCHEMY_DATABASE_URI=${{ secrets.SQLALCHEMY_DATABASE_URI }}" >> .env
-            systemctl restart your-flask-app  # Restart your Flask app (if using systemd)
+            systemctl restart flask-todo-app
           EOF
